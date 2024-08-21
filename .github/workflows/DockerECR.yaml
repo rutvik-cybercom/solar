@@ -1,0 +1,48 @@
+name: Dev - Build, Push Docker to ECR
+on:  
+  pull_request:
+      types: [opened, synchronize]
+      branches:
+        - development
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: docker.io
+  ECR_REPOSITORY: 434023610500.dkr.ecr.us-east-1.amazonaws.com/solarwebsite:latest
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: rideeze/solarwebsite
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+jobs:
+  push_to_registry:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+      
+      - name: Setup AWS ECR Details
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: us-east-1
+      - name: Login to Amazon ECR
+        id: login-pf-aws-ecr
+        uses: aws-actions/amazon-ecr-login@v1          
+
+      - name: Build and push the tagged docker image to Amazon ECR       
+        run: |
+            docker build -t $ECR_REPOSITORY .
+            echo "Pushing image to ECR..."
+            docker push $ECR_REPOSITORY
+       
+      - name: Send deployment status to Slack
+        id: slack
+        uses: slackapi/slack-github-action@v1.24.0
+        with:          
+          payload: |
+            {
+              "text": "Development Environment: ${{ github.repository }} Docker Image pushed to ECR result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"              
+            }       
+               

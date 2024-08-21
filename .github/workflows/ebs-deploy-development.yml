@@ -1,0 +1,48 @@
+name: Dev - Deploy to EBS
+on:  
+  pull_request:
+      types:
+          - closed
+      branches:
+        - development
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: docker.io
+  ECR_REPOSITORY: 434023610500.dkr.ecr.us-east-1.amazonaws.com/solarwebsite:latest
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: rideeze/solarwebsite
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+jobs:
+    if_merged:
+      if: github.event.pull_request.merged == true        
+      runs-on: ubuntu-latest
+      steps:
+          - name: Check out the repo
+            uses: actions/checkout@v3
+      
+          - name: Build deployment package
+            run: zip -r deploy.zip . -x '*.git*' -x "**node_modules**" -x "Dockerfile"        
+      
+          - name: Deploy to AWS Elastic Beanstalk
+            uses: einaregilsson/beanstalk-deploy@v16
+            with:
+                aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                region: us-east-1
+                application_name: dev-web
+                environment_name: Dev-web-env
+                version_label: ${{ github.sha }}
+                deployment_package: deploy.zip
+                use_existing_version_if_available: true
+       
+          - name: Send deployment status to Slack
+            id: slack
+            uses: slackapi/slack-github-action@v1.24.0
+            with:          
+              payload: |
+                {
+                  "text": "Development Environment: ${{ github.repository }} deployment result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"              
+                }       
+               

@@ -1,0 +1,55 @@
+/* =Home page Css
+========================================================================================*/
+.before-login-page { background-color: #F6F8FB; }
+.login-left-box, .login-right-box { min-height: 100vh; overflow-y: auto; }
+.login-right-box { background-color: #fff; height: 100%; }
+.login-right-top { background-color: #09558B; color: #fff; background-image: url(../../assets/bg-lines.png); padding: 3.75rem; background-repeat: no-repeat; background-size: 100% auto; background-position: left bottom; }
+.login-right-content { max-width: 900px; text-align: center; margin: 0.5rem auto 2rem; width: 100%; }
+.login-right-content p { margin: 0 auto; width: 100%; max-width: 410px; }
+.login-right-content h1 { color: #fff; font-size: 2.188rem; }
+.login-right-video { position: relative; overflow: hidden; border-radius: 1.2rem; max-width: 730px; margin: 0 auto; width: 100%; }
+.login-right-video img { width: 100%; height: auto; }
+.video-btn { position: absolute; top: 0; bottom: 0; left: 0; right: 0; margin: auto; height: 75px; width: 75px; background: rgba(172, 206, 33, 0.19); border-radius: 50px; font-size: 0; padding: 1.8rem; z-index: 2; }
+.video-btn:after { content: ""; background: #fff; position: absolute; top: 10px; bottom: 10px; left: 10px; right: 10px; margin: auto; border-radius: 50px; z-index: -1; }
+.video-btn svg { fill: #ACCE21; width: 100%; height: auto; margin-top: -1px; margin-left: 2px; }
+  
+.login-right-bottom { padding: 1.875rem; text-align: center; }
+.login-right-bottom h5 { font-style: normal; font-weight: 400; font-size: 20px; color: #687C8D; margin-bottom: 1rem; }
+.logo-list { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem; } 
+.logo-list figure { margin: 0; padding: 0.9rem; }
+.login-right-bottom-content { max-width: 546px; margin: 0 auto; width: 100%; color: rgba(76, 97, 115, 0.8); }
+.analyst-box { display: flex; align-items: center; justify-content: center; }
+.analyst-box figure { height: 40px; width: 40px; margin: 0 0.7rem 0 0; }
+.analyst-box figure img { width: 100%; height: auto; } 
+.analyst-info { text-align: left; font-size: 12px; }
+.analyst-info h6 { margin: 0; font-weight: 400; font-size: 15px; color: #3E4A55; }
+.analyst-info p { margin: 0; }
+.login-main-box { max-width: 558px; margin: 0 auto; width: 100%; }
+.login-left-box {  display: flex; align-items: center; justify-content: center; }
+.brandlogo { max-width: 90px; margin: 0 auto 1.4rem; width: 100%; }
+.login-form-box { background: #FFFFFF; border: 1px solid #DCE0EE; border-radius: 8px; padding: 2.25rem; }
+.user-ion { height: 40px; width: 40px; background: #ACCE21; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.6rem; }
+.user-ion svg { height: 18px; width: 18px; }
+.login-form-title { margin-top: 0.5rem; font-size: 13px; color: #A3AAC2; text-align: center; }
+.login-form-title h2 { font-weight: 500; font-size: 24px; color: #282E34; margin: 0 0 0.2rem 0; }
+
+
+/* =Responsive Css
+========================================================================================*/
+@media only screen and (max-width: 1199px) {
+	.login-right-top { padding: 3rem; }
+}
+@media only screen and (max-width: 991px) {
+	.login-right-top { padding: 2.5rem; }
+	.login-form-box { padding: 2rem; }
+	
+} 
+@media only screen and (max-width: 767px) {
+	.login-right-top { padding: 2rem; }
+	.login-form-box { padding: 1.5rem; }
+}
+/*==========================================================================================================*/
+@media only screen and (max-width: 575px) {
+	.login-right-top { padding: 1.5rem; }
+	.login-form-box { padding: 1rem; }
+}

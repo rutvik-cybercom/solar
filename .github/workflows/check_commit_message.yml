@@ -1,0 +1,25 @@
+name: Check Commit Message
+
+on: [push]
+
+jobs:
+  check-commit-message:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Get commit message
+        id: commit_message
+        run: |
+          COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
+          echo "::set-output name=commit_message::$COMMIT_MESSAGE"
+
+      - name: Check commit message
+        run: |
+          COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
+          if echo "$COMMIT_MESSAGE" | grep -Eq "\[\#[0-9]+\].*\\n\\n.*Fix\\ \#[0-9]+\\n\\n\\/spend\\ [0-9]+[hm]$"; then
+            echo "::set-output name=commit_message::$COMMIT_MESSAGE"
+            echo "Error: Commit message format is incorrect"
+            exit 1
+          fi

@@ -1,0 +1,46 @@
+name: Manual Trigger Workflow
+
+# configure manual trigger
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set Up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14 # Adjust the Node.js version as needed
+
+      - name: Install Dependencies
+        run: npm ci --silent
+
+      - name: Build React App
+        run: npm run build
+
+      - name: Zip Build Artifact
+        run: zip -r build.zip build/
+
+      - name: Deploy to AWS Elastic Beanstalk
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set default.region us-east-1
+          aws elasticbeanstalk create-application-version \
+            --application-name dev-client \
+            --version-label $GITHUB_SHA \
+            --source-bundle S3Bucket=elasticbeanstalk-us-east-1-123456789012,S3Key=$GITHUB_SHA.zip
+          aws elasticbeanstalk update-environment \
+            --application-name dev-client \
+            --environment-name Dev-client-env \
+            --version-label $GITHUB_SHA
+        env:
+          NODE_ENV: production
+
+    # You might want to add additional steps or customize as needed
+

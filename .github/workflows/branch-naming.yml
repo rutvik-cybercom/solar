@@ -1,0 +1,22 @@
+name: Branch Naming
+
+on:
+  push:
+    branches-ignore:
+      - 'master'
+      - 'main'
+
+jobs:
+  check_branch_name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch name
+        run: |
+          branch_name="${GITHUB_REF}"
+          if [[ $branch_name == "development" || $branch_name =~ ^release- ]]; then
+            echo "Skipping branch naming check for $branch_name"
+            exit 0
+          elif [[ ! $branch_name =~ ^refs/heads/(bugfix|feature)/#[0-9]+[-\w]+ ]]; then
+            echo "error: invalid branch name $branch_name"
+            exit 1
+          fi

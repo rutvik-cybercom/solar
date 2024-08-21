@@ -1,0 +1,14 @@
+{
+   "AWSEBDockerrunVersion":"1",   
+   "Image":{
+      "Name":"434023610500.dkr.ecr.us-east-1.amazonaws.com/solarwebsite:latest",
+      "Update":"true"
+   },
+   "Ports":[
+      {
+         "ContainerPort":80,
+		 "HostPort": 80
+      }
+   ],
+   "Logging":"/var/log/nginx"
+}

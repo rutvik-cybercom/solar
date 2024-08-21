@@ -1,0 +1,26 @@
+/* =Footer Css
+========================================================================================*/
+#footer { background-color: #19344A; padding: 0.9rem 0; color: #DFE5EB; font-weight: 500; }
+.fsocial a { min-width: 20px; width: 20px; margin-right: 1.5rem; }
+.fsocial a:last-child { margin-right: 0; }
+.fsocial svg { width: 100%; height: auto; fill:#dfe5eb; transition: 0.5s all; }
+.fsocial a:hover svg { fill: #006AB5; }
+.copyright { text-align: center; }
+.copyright p { margin: 0; }
+.fmenu ul { margin: 0; padding: 0; list-style: none; display: flex; justify-content: end; }
+.fmenu ul li { margin-left: 2.5rem; }
+.fmenu ul li:first-child { margin-left: 0; }
+.fmenu ul li a { color: #DFE5EB; text-decoration: none; }
+.fmenu ul li a:hover { color: #006AB5; }
+
+
+
+/* =Responsive Css
+========================================================================================*/
+@media only screen and (max-width: 1199px) {
+	.fmenu ul li { margin-left: 1.3rem; }
+	#footer { font-size: 13px; }
+}
+@media only screen and (max-width: 767px) {
+     .fsocial, .fmenu ul { justify-content: center; }
+}

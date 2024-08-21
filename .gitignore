@@ -1,0 +1,9 @@
+################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/solar_website/FileContentIndex
+/.vs/solar_website/v17
+/.vs/VSWorkspaceState.json
+/.vs/slnx.sqlite
+/node_modules

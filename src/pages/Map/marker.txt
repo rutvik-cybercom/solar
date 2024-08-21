@@ -1,0 +1,455 @@
+import * as React from 'react';
+import Box from '@mui/material/Box';
+import Slider from '@mui/material/Slider';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import {useState, useEffect, useRef } from 'react'
+import { GoogleMap, PolygonF, useJsApiLoader, StandaloneSearchBox } from "@react-google-maps/api";
+import { createPalette, normalize, rgbToColor } from '../../component/common/Util/visualize';
+import { panelsPalette } from '../../component/common/Util/color';
+import { Marker, Polyline  } from "@react-google-maps/api";
+
+
+const containerStyle = {
+  height: '100vh', 
+  width: '100%'
+};
+
+
+let geometryLibrary: google.maps.GeometryLibrary;
+const Map = ({}) => {
+
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: "AIzaSyB5fF9C_VlMQmTOIrK4_bgCzwEukEHqsuE",
+    libraries: ["places"],
+  })
+
+  const [markerLine, setMarkerLine] = useState([]);
+  const [markers, setMarkers] = useState([]);
+  const [places, setPlaces] = useState([]); 
+  const [map, setMap] = useState(null)
+  const [searchBox, setSearchBox] = useState(null);
+  const [panel, setPanel] = useState(''); 
+  const [marker, setMarker] = useState('');
+  const [yearlyEnergyDcKwh, setYearlyEnergyDcKwh] = useState(0);
+  const [buildingInsightsData, setBuildingInsightsData] = useState(null);
+  const [polygonPaths, setPolygonPaths] = useState(null);
+  // const [searchedLocationMarker, setSearchedLocationMarker] = useState(null);
+
+
+  const addMarker = (e) => {
+    setMarkers([...markers, { lat: e.latLng.lat(), lng: e.latLng.lng() }]);
+  };
+
+  const handleDoneButtonClick = () => {
+    const paths = markers.map(marker => ({ lat: marker.lat, lng: marker.lng }));
+    setPolygonPaths(paths); 
+};
+
+  const handlesadaButtonClick = () => {
+    const paths = markers.map(marker => ({ lat: marker.lat, lng: marker.lng }));
+    setPolygonPaths(paths);
+    setMarker("dummy");
+    setPanel("npanel");
+};
+
+
+  const handleResetButton = () => {
+    setMarkers([]);
+    setMarkerLine([]);
+    setPolygonPaths([]);
+    setPanel('');
+    setMarker("");
+    setCenter({
+      lat: "",
+      lng: "",
+  });
+    setMap({
+      options: {
+          strokeColor: 'rgba(176, 190, 197, 0.5)',
+          strokeOpacity: 0.9,
+          strokeWeight: 1,
+          fillColor: 'rgba(176, 190, 197, 0.5)',
+          fillOpacity: 0.9
+      }
+  });
+  };
+
+
+
+  const [buildingInsightsEndpoints, setBuildingInsightsEndpoints] = useState({
+    carbonOffsetFactorKgPerMwh:0,
+    maxSunshineHoursPerYear:0,
+    wholeRoofStats:0
+  });
+  
+  const [center, setCenter] = useState({ 
+    "lat": 40.688386661759274,
+    "lng": -73.93344666237486
+  });
+
+  
+  useEffect(() => {
+    console.log("centerrrrrr===================",center);
+    const fetchData = async () => {
+        try {
+            const apikey = 'AIzaSyB5fF9C_VlMQmTOIrK4_bgCzwEukEHqsuE';
+            const url = `https://solar.googleapis.com/v1/buildingInsights:findClosest?location.latitude=${center.lat}&location.longitude=${center.lng}&requiredQuality=HIGH&key=${apikey}`;
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            setBuildingInsightsData(data); 
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
+    if (panel) {
+      console.log("panelllllll",panel)
+        fetchData(); 
+    }
+}, [panel]);
+
+useEffect(() => {
+  if (window.google && window.google.maps && window.google.maps.geometry) {
+    const spherical = window.google.maps.geometry.spherical;
+    geometryLibrary = window.google.maps.geometry;
+    if (buildingInsightsData) {
+      showSolarPotential(spherical, buildingInsightsData, markers);
+    }
+  }
+}, [buildingInsightsData,marker]);
+  
+  const onLoad = React.useCallback(function callback(map) {
+    const bounds = new window.google.maps.LatLngBounds(center);
+    map.fitBounds(bounds);
+    setMap(map);
+  }, [center])
+
+  const handleRotateMap = (angle) => {
+    if (map) {
+      map.setHeading(angle);
+    }
+  };
+
+
+  const onMarkerDragEnd = (index, e) => {
+    const newMarkers = [...markers];
+    newMarkers[index] = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+    setMarkers(newMarkers);
+  };
+
+
+  const onSearchBoxLoad = (ref) => {
+    setSearchBox(ref);
+  };
+
+
+const onPlacesChanged = async () => {
+  const newPlaces = searchBox.getPlaces();
+  setPlaces(newPlaces);
+  if (newPlaces.length > 0 && map) {
+    const place = newPlaces[0];
+    const location = {
+      lat: place.geometry.location.lat(),
+      lng: place.geometry.location.lng()
+    };
+    setCenter(location);
+     setMarkers([location]);
+    // setSearchedLocationMarker(location);
+   } 
+};
+
+
+// const searchedLocationIcon = {
+//   url: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png', // Yellow marker icon
+//   scaledSize: new window.google.maps.Size(40, 40), // Size of the icon
+// };
+
+
+
+
+function isPointInsidePolygon(point, polygon) {
+  const x = point.lng;
+  const y = point.lat;
+  let inside = false;
+
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i].lng;
+    const yi = polygon[i].lat;
+    const xj = polygon[j].lng;
+    const yj = polygon[j].lat;
+
+    const intersect =
+      yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+
+    if (intersect) {
+      inside = !inside; 
+    }
+  }
+
+  return inside;
+}
+
+function computeOffset(center, distanceMeters, angleDegrees) {
+    const R = 6378137; 
+    const lat1 = center.latitude * Math.PI / 180; 
+    const lng1 = center.longitude * Math.PI / 180; 
+    const dOverR = distanceMeters / R;
+
+
+    const lat2 = Math.asin(
+        Math.sin(lat1) * Math.cos(dOverR) +
+        Math.cos(lat1) * Math.sin(dOverR) * Math.cos(angleDegrees * Math.PI / 180)
+    );
+
+    const lng2 = lng1 + Math.atan2(
+        Math.sin(angleDegrees * Math.PI / 180) * Math.sin(dOverR) * Math.cos(lat1),
+        Math.cos(dOverR) - Math.sin(lat1) * Math.sin(lat2)
+    );
+
+    return {
+        lat: lat2 * 180 / Math.PI, 
+        lng: lng2 * 180 / Math.PI 
+    };
+}
+
+
+const generatePaths = (
+  spherical,
+  solarPotential,
+  panelCount,
+  minEnergy,
+  maxEnergy,
+  palette 
+ 
+) => {
+  let paths = [];
+  const newOrientation = 0.5;
+
+  solarPotential.solarPanels.forEach((panel, index) => {
+    const [w, h] = [
+      solarPotential.panelWidthMeters / 2,
+      solarPotential.panelHeightMeters / 2,
+    ];
+    const points = [
+      { x: +w, y: +h }, // top right
+      { x: +w, y: -h }, // bottom right
+      { x: -w, y: -h }, // bottom left
+      { x: -w, y: +h }, // top left
+      { x: +w, y: +h }, // top right
+    ];
+    const orientation = newOrientation;
+    const azimuth = solarPotential.roofSegmentStats[0].azimuthDegrees;
+
+    const cornerCoordinates = points.map(({ x, y }) =>
+      computeOffset(
+        panel.center,
+        Math.sqrt(x * x + y * y),
+        Math.atan2(y, x) * (180 / Math.PI) + orientation + azimuth
+      )
+    );
+
+    // console.log("Corner Coordinates:", cornerCoordinates);
+
+    let allInside = false; 
+
+    if (cornerCoordinates.length > 0) {
+      allInside = cornerCoordinates.every((coord) =>
+        isPointInsidePolygon(coord, panelCount)
+      );
+    }
+    // console.log("panellllcount------",panelCount)
+    console.log("Panel All Inside:", allInside);
+
+    if (allInside) {
+      const colorIndex = Math.round(
+        normalize(panel.yearlyEnergyDcKwh, maxEnergy, minEnergy) * 280
+      );
+
+      paths.push(
+        <PolygonF
+          key={index}
+          path={points.map(({ x, y }) =>
+            spherical.computeOffset(
+              { lat: panel.center.latitude, lng: panel.center.longitude },
+              Math.sqrt(x * x + y * y),
+              Math.atan2(y, x) * (180 / Math.PI) + orientation + azimuth
+            )
+          )}
+          options={{
+            strokeColor: "#B0BEC5",
+            strokeOpacity: 0.9,
+            strokeWeight: 1,
+            fillColor: palette[colorIndex],
+            fillOpacity: 0.9,
+          }}
+        />
+      );
+    }
+  });
+  // console.log("Generated Paths:", paths);
+
+  return paths;
+};
+
+
+
+  const showSolarPotential = (spherical, buildingInsights, panelCount) => {
+    console.log("hlo",panelCount)
+    const solarPotential = buildingInsights.solarPotential;
+    const palette = createPalette(panelsPalette, 256).map(rgbToColor);
+    const minEnergy = solarPotential.solarPanels.slice(-1)[0].yearlyEnergyDcKwh;
+    const maxEnergy = solarPotential.solarPanels[0].yearlyEnergyDcKwh;
+
+    setBuildingInsightsEndpoints(prev => ({
+        ...prev,
+        carbonOffsetFactorKgPerMwh: solarPotential.carbonOffsetFactorKgPerMwh,
+        maxSunshineHoursPerYear: solarPotential.maxSunshineHoursPerYear,
+        wholeRoofStats: solarPotential.wholeRoofStats.areaMeters2
+    }));
+
+    const paths = generatePaths(spherical, solarPotential, panelCount,minEnergy,maxEnergy,palette);
+    setMap({
+        paths,
+        options: {
+            strokeColor: '#B0BEC5',
+            strokeOpacity: 0.9,
+            strokeWeight: 5,
+            fillColor: palette[0],
+            fillOpacity: 0.9
+        }
+    });
+  };
+
+  return (
+
+    
+    <div style={{ display: 'flex', position: 'relative', height: '100vh', backgroundColor: '#fff' }}>
+      <div style={{ flex: 1, zIndex: 0 }}>
+        {!isLoaded ? (
+          <h1>Loading...</h1>
+        ) : (
+          <>
+            <Button style={{ width: '100px', height: '100px' }} onClick={handleDoneButtonClick}>Done</Button>
+            <Button style={{width:'100px',height:'100px'}} onClick={handlesadaButtonClick}>Get Panels</Button>
+            <Button style={{width:'100px',height:'100px'}} onClick={handleResetButton}>Reset Button</Button>
+            
+            <GoogleMap
+              mapContainerStyle={{ height: '100%', width: '100%' }}
+              center={center}
+              mapTypeId="satellite"
+              tilt={0}
+              onLoad={onLoad}
+              onClick={addMarker}
+              compassEnabled={true}
+            >
+              <div
+            style={{
+              position: 'absolute',
+              bottom: 10,
+              right: 0,
+              backgroundColor: 'white',
+              borderRadius: '4px',
+              padding: '8px',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+              zIndex: 1,
+            }}
+          >
+            <button onClick={() => handleRotateMap(0)}>N</button>
+            <button onClick={() => handleRotateMap(90)}>E</button>
+            <button onClick={() => handleRotateMap(180)}>S</button>
+            <button onClick={() => handleRotateMap(270)}>W</button>
+          </div>
+          
+            <StandaloneSearchBox
+                onLoad={onSearchBoxLoad}
+                onPlacesChanged={onPlacesChanged}
+              >
+                <input
+                  type="text"
+                  placeholder="Search places..."
+                  style={{
+                    boxSizing: `border-box`,
+                    border: `1px solid transparent`,
+                    width: `240px`,
+                    height: `32px`,
+                    padding: `0 12px`,
+                    borderRadius: `3px`,
+                    boxShadow: `0 2px 6px rgba(0, 0, 0, 0.3)`,
+                    fontSize: `14px`,
+                    outline: `none`,
+                    textOverflow: `ellipses`,
+                    position: "absolute",
+                    left: "80%",
+                    top: '20px',
+                    marginLeft: "-150px",
+                    zIndex: 1
+                  }}
+                />
+              </StandaloneSearchBox>
+              {/* {searchedLocationMarker && (
+                <Marker
+                  position={searchedLocationMarker}
+                  icon={searchedLocationIcon}
+
+                  draggable={false} 
+                />
+              )} */}
+                {/* <Marker position={center}/> */}
+              {markers.length > 0 && markers.map((marker, index) => (
+                <Marker
+                  key={index}
+                  position={{ lat: marker.lat, lng: marker.lng }}
+                  draggable={true}
+                  onDragEnd={(e) => onMarkerDragEnd(index, e)}
+                />
+              ))}
+              {markerLine && markerLine.length > 0 && (
+                <PolygonF
+                key={index}
+                  path={markerLine}
+                  options={{
+                    strokeColor: '#FF0000',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: 'red',
+                    fillOpacity: 0.35
+                  }}
+                />
+              )}
+              {polygonPaths && (
+                <PolygonF
+                  path={polygonPaths}
+                  options={{
+                    strokeColor: '#FF0000',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: 'red',
+                    fillOpacity: 0.35
+                  }}
+                />
+              )}
+              {markers.length >= 2 && (
+                <Polyline
+                  path={markers}
+                  options={{
+                    strokeColor: "#FF0000",
+                    strokeOpacity: 1.0,
+                    strokeWeight: 2,
+                  }}
+                />
+              )}
+              {map && map.paths ? map.paths.map(ele => ele) : null}
+            </GoogleMap>
+          </>
+        )}
+      </div>
+    </div>
+   
+  );
+}
+export default Map;

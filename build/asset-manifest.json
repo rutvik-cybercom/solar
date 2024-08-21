@@ -1,0 +1,41 @@
+{
+  "files": {
+    "main.css": "/static/css/main.bf729947.css",
+    "main.js": "/static/js/main.5fd2fb6e.js",
+    "static/js/453.16989006.chunk.js": "/static/js/453.16989006.chunk.js",
+    "static/media/image 2.jpg": "/static/media/image 2.ce37c535619ed7591655.jpg",
+    "static/media/Solar-Panel-1.jpg": "/static/media/Solar-Panel-1.222b89a74ce5e7ad8d32.jpg",
+    "static/media/Gilroy-SemiBold.svg": "/static/media/Gilroy-SemiBold.921bc9fd2b29923ff50e.svg",
+    "static/media/Gilroy-Medium.svg": "/static/media/Gilroy-Medium.debf3786df6fee7196ca.svg",
+    "static/media/Gilroy-Bold.svg": "/static/media/Gilroy-Bold.801380470b634e392b0c.svg",
+    "static/media/solar-model-2.jpg": "/static/media/solar-model-2.c84ed06e8543cc70af3c.jpg",
+    "static/media/Gilroy-Regular.svg": "/static/media/Gilroy-Regular.a1cf5ba7908f3c5935be.svg",
+    "static/media/login-video-poster.jpg": "/static/media/login-video-poster.96c250e80d16be3f87e4.jpg",
+    "static/media/Gilroy-Regular.eot": "/static/media/Gilroy-Regular.6580e955146113d08f5d.eot",
+    "static/media/Gilroy-Regular.ttf": "/static/media/Gilroy-Regular.2f2c32377d1f030b6245.ttf",
+    "static/media/Gilroy-Medium.eot": "/static/media/Gilroy-Medium.f60cd18329e0d673ffc6.eot",
+    "static/media/Gilroy-Medium.ttf": "/static/media/Gilroy-Medium.0a1d2a6e3e43124ab928.ttf",
+    "static/media/Gilroy-SemiBold.eot": "/static/media/Gilroy-SemiBold.c429291032825f7360fd.eot",
+    "static/media/Gilroy-SemiBold.ttf": "/static/media/Gilroy-SemiBold.5a32615e7ba299a69b1a.ttf",
+    "static/media/Gilroy-Bold.eot": "/static/media/Gilroy-Bold.cd46775bb16b44ff7adc.eot",
+    "static/media/Gilroy-Bold.ttf": "/static/media/Gilroy-Bold.893bf33281894ae9c40f.ttf",
+    "static/media/Gilroy-Medium.woff": "/static/media/Gilroy-Medium.cc2403902328c8427149.woff",
+    "static/media/Gilroy-SemiBold.woff": "/static/media/Gilroy-SemiBold.fd71942df3a295f391e9.woff",
+    "static/media/Gilroy-Regular.woff": "/static/media/Gilroy-Regular.619220d0885dc80ba4c7.woff",
+    "static/media/Gilroy-Bold.woff": "/static/media/Gilroy-Bold.c2c9c8d95ded6b79001b.woff",
+    "static/media/Gilroy-Medium.woff2": "/static/media/Gilroy-Medium.0cf5999b8575e9eeaf8e.woff2",
+    "static/media/Gilroy-SemiBold.woff2": "/static/media/Gilroy-SemiBold.3a8e281180ed15b49420.woff2",
+    "static/media/Gilroy-Bold.woff2": "/static/media/Gilroy-Bold.23fbf19933d352e69a49.woff2",
+    "static/media/Gilroy-Regular.woff2": "/static/media/Gilroy-Regular.39bae8cb6f7028d59b33.woff2",
+    "static/media/bg-lines.png": "/static/media/bg-lines.e6bfa1be7f63ca5108c3.png",
+    "static/media/icon_Waypoint.svg": "/static/media/icon_Waypoint.0c0334fc3f0ad58e75099a4a8f0643eb.svg",
+    "index.html": "/index.html",
+    "main.bf729947.css.map": "/static/css/main.bf729947.css.map",
+    "main.5fd2fb6e.js.map": "/static/js/main.5fd2fb6e.js.map",
+    "453.16989006.chunk.js.map": "/static/js/453.16989006.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.bf729947.css",
+    "static/js/main.5fd2fb6e.js"
+  ]
+}

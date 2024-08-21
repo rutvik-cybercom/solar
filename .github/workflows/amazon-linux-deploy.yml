@@ -1,0 +1,74 @@
+name: Build and Deploy to EC2-Linux
+
+on:  
+  pull_request:
+    types: [opened, synchronize, closed, edited, reopened]
+    branches:
+      - development
+      - main
+      - master
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: docker.io
+  ECR_REPOSITORY: 434023610500.dkr.ecr.us-east-1.amazonaws.com
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: ${{ (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') && 'solarwebsite:prodlatest' || 'solarwebsite:devlatest' }}
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  EnvironmentName: ${{ (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') && 'Production' || 'Development' }}
+  APPNAME: ${{ (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') && 'bessandsolar-prod' || 'bessandsolar-dev' }}
+  PORT: ${{ (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') && '8081:80' || '8082:80' }}
+
+jobs:
+  push_to_registry:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+      
+      - name: Setup AWS ECR Details
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-pf-aws-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Add SSH key
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+            ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+        
+      - name: Build and push the tagged docker image to Amazon ECR         
+        run: |
+            docker build -t $ECR_REPOSITORY/$IMAGE_NAME .
+            echo "Pushing image to ECR..."
+            docker push $ECR_REPOSITORY/$IMAGE_NAME            
+
+      - name: Deploy to Amazon Linux
+        if: ${{ github.event.pull_request.merged }}        
+        env:
+          HOST: ec2-54-163-215-162.compute-1.amazonaws.com
+          USERNAME: ec2-user
+          KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          SSHKEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          ssh -o StrictHostKeyChecking=no $USERNAME@$HOST << EOF                        
+            docker pull $ECR_REPOSITORY/$IMAGE_NAME  
+            docker stop $APPNAME || true
+            docker rm $APPNAME || true
+            docker run -d --name $APPNAME -p $PORT $ECR_REPOSITORY/$IMAGE_NAME
+          EOF
+
+      - name: Send deployment status to Slack
+        if: ${{ github.event.pull_request.merged }}
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "${{ env.EnvironmentName }} Environment: ${{ github.repository }} Docker Image pushed to ECR result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+            }
